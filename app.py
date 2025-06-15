@@ -4,21 +4,22 @@ import random
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="LexIQ Labs", layout="centered")
-
-# --- PASSWORD GATE ---
 st.title("🔐 LexIQ Labs - PsychBlend AI")
 
+# --- PASSWORD GATE ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
     password = st.text_input("Enter Access Code", type="password")
-    if st.button("Login"):
-        if password == "DEMO2025":
+    login_button = st.button("Login")
+
+    if login_button:
+        if password == "DEMO2025":  # Change this to your actual code
             st.session_state["authenticated"] = True
-            st.experimental_rerun()
+            st.success("✅ Access granted. You may now use the tool below.")
         else:
-            st.error("Invalid access code.")
+            st.error("❌ Invalid access code.")
     st.stop()
 
 # --- FORM ---
@@ -35,7 +36,7 @@ with st.form("input_form"):
     added_revenue = st.text_input("Added Revenue", "$2000")
     impact_percent = st.text_input("Impact %", "40%")
     goal_date = st.text_input("Goal Date", "End of June")
-    
+
     submitted = st.form_submit_button("🔮 Blend My Prompts")
 
 if submitted:
@@ -44,12 +45,13 @@ if submitted:
             data = yaml.safe_load(f)
             fragments = data["fragments"]
     except Exception as e:
-        st.error(f"Failed to load prompt file: {e}")
+        st.error(f"⚠️ Error loading prompts: {e}")
         st.stop()
 
     selected = random.sample(fragments, 5)
 
-    st.subheader("🧠 Blended Prompts + ChatGPT Prompts")
+    st.subheader("🧩 Blended Prompts + ChatGPT Prompts")
+
     for i, frag in enumerate(selected, 1):
         blended = frag.format(
             prospect_name=prospect_name,
@@ -65,10 +67,11 @@ if submitted:
         )
 
         chatgpt_prompt = (
-            f"Write a cold email to {prospect_name} that begins with this line:\n"
+            f"Write a persuasive cold email to {prospect_name} that starts with this hook:\n"
             f"\"{blended}\"\n\n"
-            f"Highlight the pain point ({pain_point}), offer a way to reach {desired_outcome} in {future_timeline}, "
-            f"and include a soft CTA and a conversational tone."
+            f"The email should highlight the pain point: '{pain_point}', "
+            f"and propose a way to achieve '{desired_outcome}' in {future_timeline}. "
+            f"Include subtle urgency, a clear CTA, and a conversational tone."
         )
 
         st.markdown(f"### 🔹 Prompt {i}")
