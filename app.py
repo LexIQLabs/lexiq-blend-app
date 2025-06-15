@@ -4,82 +4,74 @@ import random
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="LexIQ Labs", layout="centered")
-st.title("🔐 LexIQ Labs - PsychBlend AI")
 
 # --- PASSWORD GATE ---
+st.title("🔐 LexIQ Labs - PsychBlend AI")
+
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
     password = st.text_input("Enter Access Code", type="password")
-    login_button = st.button("Login")
-
-    if login_button:
-        if password == "DEMO2025":  # Change to your real password
+    if st.button("Login"):
+        if password == "DEMO2025":
             st.session_state["authenticated"] = True
-            st.success("Access granted. Scroll down to use the tool.")
+            st.experimental_rerun()
         else:
             st.error("Invalid access code.")
     st.stop()
 
-# --- INPUT FORM ---
-st.header("🧠 Input Personalization Details")
+# --- FORM ---
+st.header("🧠 Fill Out These Details")
 
 with st.form("input_form"):
     prospect_name = st.text_input("Prospect Name", "Jordan")
-    pain_point = st.text_input("Main Pain Point", "No qualified leads")
-    desired_outcome = st.text_input("Desired Outcome", "10 sales calls per week")
+    pain_point = st.text_input("Pain Point", "No qualified leads")
+    desired_outcome = st.text_input("Desired Outcome", "10 booked calls")
     future_timeline = st.text_input("Future Timeline", "30 days")
-    wait_period = st.text_input("How long have they waited?", "3 weeks")
-    competitor_name = st.text_input("Competitor Name", "Coach Lenny")
-    cost_savings = st.text_input("Cost Savings", "$2000")
-    added_revenue = st.text_input("Added Revenue", "$5000")
-    impact_percent = st.text_input("Impact Percent", "30%")
-    goal_date = st.text_input("Goal Date", "June 30")
-
+    wait_period = st.text_input("Wait Period", "2 weeks")
+    competitor_name = st.text_input("Competitor", "Coach Lenny")
+    cost_savings = st.text_input("Cost Savings", "$500")
+    added_revenue = st.text_input("Added Revenue", "$2000")
+    impact_percent = st.text_input("Impact %", "40%")
+    goal_date = st.text_input("Goal Date", "End of June")
+    
     submitted = st.form_submit_button("🔮 Blend My Prompts")
 
-# --- PROMPT GENERATION ---
 if submitted:
     try:
         with open("psychology_micro_prompts.yaml", "r") as f:
-            all_fragments = yaml.safe_load(f)
-        selected = random.sample(all_fragments["fragments"], 5)
-
-        st.subheader("🧩 Blended Prompts + Email Generators")
-
-        for i, frag in enumerate(selected, 1):
-            blended = frag.format(
-                prospect_name=prospect_name,
-                pain_point=pain_point,
-                desired_outcome=desired_outcome,
-                future_timeline=future_timeline,
-                wait_period=wait_period,
-                competitor_name=competitor_name,
-                cost_savings=cost_savings,
-                added_revenue=added_revenue,
-                impact_percent=impact_percent,
-                goal_date=goal_date
-            )
-
-            chatgpt_prompt = (
-                f"Write a persuasive cold email to {prospect_name} that starts with this hook:\n"
-                f"\"{blended}\"\n\n"
-                f"The email should highlight their pain point: '{pain_point}', "
-                f"and propose a way to achieve '{desired_outcome}' in {future_timeline}. "
-                f"Include subtle urgency, a clear CTA, and end with a conversational tone."
-            )
-
-            # --- DISPLAY IN TWO COLUMNS ---
-            st.markdown(f"### 🔹 Line {i}")
-            col1, col2 = st.columns([1, 3])
-
-            with col1:
-                st.markdown("**🎯 Blended Prompt**")
-                st.success(blended)
-
-            with col2:
-                st.markdown("**📨 ChatGPT Prompt**")
-                st.code(chatgpt_prompt, language="markdown")
+            data = yaml.safe_load(f)
+            fragments = data["fragments"]
     except Exception as e:
-        st.error(f"⚠️ Error loading prompt file: {e}")
+        st.error(f"Failed to load prompt file: {e}")
+        st.stop()
+
+    selected = random.sample(fragments, 5)
+
+    st.subheader("🧠 Blended Prompts + ChatGPT Prompts")
+    for i, frag in enumerate(selected, 1):
+        blended = frag.format(
+            prospect_name=prospect_name,
+            pain_point=pain_point,
+            desired_outcome=desired_outcome,
+            future_timeline=future_timeline,
+            wait_period=wait_period,
+            competitor_name=competitor_name,
+            cost_savings=cost_savings,
+            added_revenue=added_revenue,
+            impact_percent=impact_percent,
+            goal_date=goal_date
+        )
+
+        chatgpt_prompt = (
+            f"Write a cold email to {prospect_name} that begins with this line:\n"
+            f"\"{blended}\"\n\n"
+            f"Highlight the pain point ({pain_point}), offer a way to reach {desired_outcome} in {future_timeline}, "
+            f"and include a soft CTA and a conversational tone."
+        )
+
+        st.markdown(f"### 🔹 Prompt {i}")
+        st.success(blended)
+        st.markdown("**🧠 ChatGPT Prompt:**")
+        st.code(chatgpt_prompt)
