@@ -8,16 +8,18 @@ st.title("🔐 LexIQ Labs - PsychBlend AI")
 
 # --- PASSWORD GATE ---
 if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+    st.session_state["authenticated"] = False
 
-if not st.session_state.authenticated:
+if not st.session_state["authenticated"]:
     password = st.text_input("Enter Access Code", type="password")
-    if password == "DEMO2025":  # Change this to your real passcode
-        st.session_state.authenticated = True
-        st.success("Access granted. Loading tool...")
-        st.experimental_rerun()
-    elif password:
-        st.error("Invalid access code.")
+    login_button = st.button("Login")
+
+    if login_button:
+        if password == "DEMO2025":  # Change to your real password
+            st.session_state["authenticated"] = True
+            st.success("Access granted. Scroll down to use the tool.")
+        else:
+            st.error("Invalid access code.")
     st.stop()
 
 # --- INPUT FORM ---
@@ -39,43 +41,45 @@ with st.form("input_form"):
 
 # --- PROMPT GENERATION ---
 if submitted:
-    with open("psychology_micro_prompts.yaml", "r") as f:
-        all_fragments = yaml.safe_load(f)
+    try:
+        with open("psychology_micro_prompts.yaml", "r") as f:
+            all_fragments = yaml.safe_load(f)
+        selected = random.sample(all_fragments["fragments"], 5)
 
-    selected = random.sample(all_fragments["fragments"], 5)
+        st.subheader("🧩 Blended Prompts + Email Generators")
 
-    st.subheader("🧩 Blended Prompts + Email Generators")
+        for i, frag in enumerate(selected, 1):
+            blended = frag.format(
+                prospect_name=prospect_name,
+                pain_point=pain_point,
+                desired_outcome=desired_outcome,
+                future_timeline=future_timeline,
+                wait_period=wait_period,
+                competitor_name=competitor_name,
+                cost_savings=cost_savings,
+                added_revenue=added_revenue,
+                impact_percent=impact_percent,
+                goal_date=goal_date
+            )
 
-    for i, frag in enumerate(selected, 1):
-        blended = frag.format(
-            prospect_name=prospect_name,
-            pain_point=pain_point,
-            desired_outcome=desired_outcome,
-            future_timeline=future_timeline,
-            wait_period=wait_period,
-            competitor_name=competitor_name,
-            cost_savings=cost_savings,
-            added_revenue=added_revenue,
-            impact_percent=impact_percent,
-            goal_date=goal_date
-        )
+            chatgpt_prompt = (
+                f"Write a persuasive cold email to {prospect_name} that starts with this hook:\n"
+                f"\"{blended}\"\n\n"
+                f"The email should highlight their pain point: '{pain_point}', "
+                f"and propose a way to achieve '{desired_outcome}' in {future_timeline}. "
+                f"Include subtle urgency, a clear CTA, and end with a conversational tone."
+            )
 
-        chatgpt_prompt = (
-            f"Write a persuasive cold email to {prospect_name} that starts with this hook:\n"
-            f"\"{blended}\"\n\n"
-            f"The email should highlight their pain point: '{pain_point}', "
-            f"and propose a way to achieve '{desired_outcome}' in {future_timeline}. "
-            f"Include subtle urgency, a clear CTA, and end with a conversational tone."
-        )
+            # --- DISPLAY IN TWO COLUMNS ---
+            st.markdown(f"### 🔹 Line {i}")
+            col1, col2 = st.columns([1, 3])
 
-        # --- DISPLAY IN TWO COLUMNS ---
-        st.markdown(f"### 🔹 Line {i}")
-        col1, col2 = st.columns([1, 3])
+            with col1:
+                st.markdown("**🎯 Blended Prompt**")
+                st.success(blended)
 
-        with col1:
-            st.markdown("**🎯 Blended Prompt**")
-            st.success(blended)
-
-        with col2:
-            st.markdown("**📨 ChatGPT Prompt**")
-            st.code(chatgpt_prompt, language="markdown")
+            with col2:
+                st.markdown("**📨 ChatGPT Prompt**")
+                st.code(chatgpt_prompt, language="markdown")
+    except Exception as e:
+        st.error(f"⚠️ Error loading prompt file: {e}")
