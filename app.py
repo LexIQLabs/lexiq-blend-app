@@ -2,24 +2,26 @@ import streamlit as st
 import yaml
 import random
 
-# --- PASSWORD GATE ---
+# --- PAGE CONFIG ---
 st.set_page_config(page_title="LexIQ Labs", layout="centered")
 st.title("🔐 LexIQ Labs - PsychBlend AI")
 
+# --- PASSWORD GATE ---
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 if not st.session_state.authenticated:
     password = st.text_input("Enter Access Code", type="password")
-    if password == "DEMO2025":  # change this to your secure pass
+    if password == "DEMO2025":  # Change this to your real passcode
         st.session_state.authenticated = True
+        st.success("Access granted. Loading tool...")
         st.experimental_rerun()
     elif password:
         st.error("Invalid access code.")
     st.stop()
 
-# --- FORM ---
-st.header("🧠 Input Details for Personalization")
+# --- INPUT FORM ---
+st.header("🧠 Input Personalization Details")
 
 with st.form("input_form"):
     prospect_name = st.text_input("Prospect Name", "Jordan")
@@ -27,15 +29,15 @@ with st.form("input_form"):
     desired_outcome = st.text_input("Desired Outcome", "10 sales calls per week")
     future_timeline = st.text_input("Future Timeline", "30 days")
     wait_period = st.text_input("How long have they waited?", "3 weeks")
-    competitor_name = st.text_input("Competitor Name (optional)", "Coach Lenny")
-    cost_savings = st.text_input("Cost Savings (optional)", "$2000")
-    added_revenue = st.text_input("Added Revenue (optional)", "$5000")
-    impact_percent = st.text_input("Impact Percent (optional)", "30%")
-    goal_date = st.text_input("Goal Date (optional)", "June 30")
+    competitor_name = st.text_input("Competitor Name", "Coach Lenny")
+    cost_savings = st.text_input("Cost Savings", "$2000")
+    added_revenue = st.text_input("Added Revenue", "$5000")
+    impact_percent = st.text_input("Impact Percent", "30%")
+    goal_date = st.text_input("Goal Date", "June 30")
 
     submitted = st.form_submit_button("🔮 Blend My Prompts")
 
-# --- LOAD PROMPTS + GENERATE ---
+# --- PROMPT GENERATION ---
 if submitted:
     with open("psychology_micro_prompts.yaml", "r") as f:
         all_fragments = yaml.safe_load(f)
@@ -66,10 +68,10 @@ if submitted:
             f"Include subtle urgency, a clear CTA, and end with a conversational tone."
         )
 
-        # --- DISPLAY TABLE STYLE ---
+        # --- DISPLAY IN TWO COLUMNS ---
         st.markdown(f"### 🔹 Line {i}")
-
         col1, col2 = st.columns([1, 3])
+
         with col1:
             st.markdown("**🎯 Blended Prompt**")
             st.success(blended)
